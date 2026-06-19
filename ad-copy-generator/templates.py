@@ -1,4 +1,9 @@
-"""AIDA copy templates for Indonesian service business. Author: Avatar Putra Sigit"""
+"""Copy frameworks for Indonesian service business. Author: Avatar Putra Sigit
+
+Holds the original AIDA template engine (preserved) plus PAS, 4U, and
+Storytelling generators used by the AI Ad Copy Generator app. Every generator
+returns a normalized dict: {"headline", "body", "cta"}.
+"""
 import random
 
 AIDA_TEMPLATES = {
@@ -70,8 +75,9 @@ AIDA_TEMPLATES = {
     }
 }
 
+
 def generate_aida(product: str, service: str, benefit: str, tone: str, phone: str = "0812-3456-7890") -> dict:
-    """Generate AIDA copy from templates with dynamic insertion."""
+    """Generate AIDA copy from templates with dynamic insertion (original engine)."""
     try:
         svc = AIDA_TEMPLATES.get(service, AIDA_TEMPLATES["rope_access"])
         return {
@@ -87,3 +93,121 @@ def generate_aida(product: str, service: str, benefit: str, tone: str, phone: st
             "desire": "",
             "action": ""
         }
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: multi-framework engine (AIDA / PAS / 4U / Storytelling)
+# ---------------------------------------------------------------------------
+
+# Tone-specific flavor used to color every framework's wording.
+TONE_FLAVOR = {
+    "Professional": {
+        "adj": "andal", "punct": ".",
+        "opener": "Solusi {audience} yang terukur",
+        "close": "Dipercaya oleh para profesional",
+    },
+    "Casual": {
+        "adj": "gampang", "punct": "!",
+        "opener": "Hai {audience}, ada kabar baik nih",
+        "close": "Yuk, gas sekarang",
+    },
+    "Urgent": {
+        "adj": "cepat", "punct": "!",
+        "opener": "PENTING untuk {audience}",
+        "close": "Jangan tunda lagi — slot terbatas",
+    },
+    "Friendly": {
+        "adj": "ramah", "punct": ".",
+        "opener": "Buat kamu, {audience}",
+        "close": "Kami siap bantu kapan saja",
+    },
+    "Luxury": {
+        "adj": "premium", "punct": ".",
+        "opener": "Eksklusif untuk {audience}",
+        "close": "Sebuah standar baru kemewahan",
+    },
+}
+
+# Human-readable label for the audience segment.
+AUDIENCE_LABEL = {
+    "B2B": "pelaku bisnis", "B2C": "pelanggan", "F&B": "pebisnis kuliner",
+    "Property": "pemilik properti", "Tech": "tim teknologi",
+    "Health": "penyedia layanan kesehatan", "Fashion": "brand fashion",
+}
+
+
+def _flavor(tone: str) -> dict:
+    return TONE_FLAVOR.get(tone, TONE_FLAVOR["Professional"])
+
+
+def _audience_label(audience: str) -> str:
+    return AUDIENCE_LABEL.get(audience, "pelanggan")
+
+
+def generate_aida_copy(product: str, audience: str, pain_point: str, tone: str, cta: str) -> dict:
+    """AIDA → normalized {headline, body, cta} for the new UI."""
+    f = _flavor(tone)
+    aud = _audience_label(audience)
+    headline = f"{product}: {f['opener'].format(audience=aud)}{f['punct']}"
+    body = (
+        f"Attention — {pain_point.strip().rstrip('.')}.\n"
+        f"Interest — {product} hadir dengan pendekatan {f['adj']} yang dirancang untuk {aud}.\n"
+        f"Desire — Bayangkan hasil nyata: lebih efisien, lebih tenang, lebih untung.\n"
+        f"Action — {f['close']}."
+    )
+    return {"headline": headline, "body": body, "cta": cta}
+
+
+def generate_pas_copy(product: str, audience: str, pain_point: str, tone: str, cta: str) -> dict:
+    """PAS (Problem-Agitate-Solution)."""
+    f = _flavor(tone)
+    aud = _audience_label(audience)
+    headline = f"Masih terganggu masalah ini, {aud}?{f['punct']}"
+    body = (
+        f"Problem — {pain_point.strip().rstrip('.')}.\n"
+        f"Agitate — Dibiarkan, masalah ini menggerus waktu, biaya, dan reputasi Anda.\n"
+        f"Solution — {product} menawarkan solusi {f['adj']} yang langsung menyelesaikannya. {f['close']}."
+    )
+    return {"headline": headline, "body": body, "cta": cta}
+
+
+def generate_4u_copy(product: str, audience: str, pain_point: str, tone: str, cta: str) -> dict:
+    """4U (Useful, Urgent, Unique, Ultra-specific)."""
+    f = _flavor(tone)
+    aud = _audience_label(audience)
+    headline = f"{product} — {f['adj'].capitalize()}, terbukti untuk {aud}{f['punct']}"
+    body = (
+        f"Useful — Menjawab langsung: {pain_point.strip().rstrip('.')}.\n"
+        f"Urgent — Setiap hari menunda berarti kehilangan peluang.\n"
+        f"Unique — Hanya {product} yang menggabungkan kualitas {f['adj']} dengan harga masuk akal.\n"
+        f"Ultra-specific — Hasil terukur dalam 30 hari pertama. {f['close']}."
+    )
+    return {"headline": headline, "body": body, "cta": cta}
+
+
+def generate_storytelling_copy(product: str, audience: str, pain_point: str, tone: str, cta: str) -> dict:
+    """Storytelling (hero's journey, micro)."""
+    f = _flavor(tone)
+    aud = _audience_label(audience)
+    headline = f"Kisah {aud} yang akhirnya menemukan jalan keluar{f['punct']}"
+    body = (
+        f"Dulu, seperti banyak {aud} lain, mereka berhadapan dengan {pain_point.strip().rstrip('.')}.\n"
+        f"Setiap upaya terasa buntu — sampai mereka menemukan {product}.\n"
+        f"Dengan pendekatan {f['adj']}, semuanya berubah: beban berkurang, hasil meningkat.\n"
+        f"Kini giliran Anda menulis akhir cerita yang sama. {f['close']}."
+    )
+    return {"headline": headline, "body": body, "cta": cta}
+
+
+FRAMEWORK_GENERATORS = {
+    "AIDA": generate_aida_copy,
+    "PAS": generate_pas_copy,
+    "4U": generate_4u_copy,
+    "Storytelling": generate_storytelling_copy,
+}
+
+
+def generate(product: str, audience: str, pain_point: str, framework: str, tone: str, cta: str) -> dict:
+    """Unified entry point. Returns {headline, body, cta}. Falls back to AIDA."""
+    gen = FRAMEWORK_GENERATORS.get(framework, generate_aida_copy)
+    return gen(product, audience, pain_point, tone, cta)
