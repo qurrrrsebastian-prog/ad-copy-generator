@@ -6,4 +6,6 @@ venv/
 env/
 .DS_Store
 data/*.csv
+data/*.db
+.streamlit/secrets.toml
 .ipynb_checkpoints/

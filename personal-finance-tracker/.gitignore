@@ -1,9 +1,21 @@
+# Python
 __pycache__/
 *.py[cod]
 *.egg-info/
+.pytest_cache/
+
+# Virtual environments
 .venv/
 venv/
 env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
 .DS_Store
-instance/
-*.db
+Thumbs.db
+
+# Local DB backups (keep finance.db tracked)
+*.db-journal
+*.db-wal
